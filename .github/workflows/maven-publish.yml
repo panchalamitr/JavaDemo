@@ -28,16 +28,34 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
+    - name: Generate timestamp
+      id: timestamp
+      run: echo "::set-output name=timestamp::$(date +'%Y%m%d%H%M%S')"
+
     - name: Build Docker image
       uses: docker/build-push-action@v2
       with:
         context: .
         push: true
-        tags: panchalamitr/hellojava:latest
+        tags: panchalamitr/hellojava:${{ steps.timestamp.outputs.timestamp }}
 
-    - name: Push Docker image to Docker Hub
-      uses: docker/build-push-action@v2
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        context: .
-        push: true
-        tags: panchalamitr/hellojava:latest
+        tag_name: ${{ steps.timestamp.outputs.timestamp }}
+        release_name: Release ${{ steps.timestamp.outputs.timestamp }}
+        body: |
+          This is an automatically generated release for tag ${{ steps.timestamp.outputs.timestamp }}.
+
+    - name: Upload WAR file as Release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./target/LearnSpring-0.0.1.war
+        asset_name: LearnSpring-0.0.1.war
+        asset_content_type: application/octet-stream
