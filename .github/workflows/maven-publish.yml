@@ -30,7 +30,7 @@ jobs:
 
     - name: Generate timestamp
       id: timestamp
-      run: echo "::set-output name=timestamp::$(date +'%Y%m%d%H%M%S')"
+      run: echo "::set-output name=timestamp::$(date +'%Y_%m_%d_%H_%M_%S')"
 
     - name: Build Docker image
       uses: docker/build-push-action@v2
